@@ -1,5 +1,5 @@
 from setuptools import setup
-
+import glob
 
 def readme():
     with open('README.rst') as f:
@@ -20,7 +20,8 @@ setup(name='Sticky',
     	'Intended Audience :: General',
 		'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
 	  ],
-	  pacage_data=,
+	  data_files=[('/sticky/icons',glob.glob('icons/*'))],
+	  include_package_data=True,
       install_requires=['PySide'],
       scripts=["initsticky"],
       packages=['sticky'])

@@ -1,5 +1,7 @@
 import sys
 from PySide import QtCore, QtGui 
+import os
+import sys
 
 class Sticky(QtGui.QMainWindow):
     def __init__(self,parent = None):
@@ -25,19 +27,19 @@ class Sticky(QtGui.QMainWindow):
         self.show()
 
     def addToolBarElements(self):
-		self.bgcolor = QtGui.QAction(QtGui.QIcon("icons/bgcolor.png"),"Change Background Color",self)
+		self.bgcolor = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/bgcolor.png')),"Change Background Color",self)
 		self.bgcolor.setStatusTip("Background Color")
 		self.bgcolor.triggered.connect(self.changeBgColor)
 
-		self.textcolor = QtGui.QAction(QtGui.QIcon("icons/color.png"),"Select Text Color",self)
+		self.textcolor = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/color.png')),"Select Text Color",self)
 		self.textcolor.setStatusTip("Text Color")
 		self.textcolor.triggered.connect(self.changeTextColor)
 
-		self.increasefont = QtGui.QAction(QtGui.QIcon("icons/increase.png"),"Select Text Color",self)
+		self.increasefont = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/increase.png')),"Select Text Color",self)
 		self.increasefont.setStatusTip("Text Color")
 		self.increasefont.triggered.connect(self.increaseFontSize)
 
-		self.decreasefont = QtGui.QAction(QtGui.QIcon("icons/decrease.png"),"Select Text Color",self)
+		self.decreasefont = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/decrease.png')),"Select Text Color",self)
 		self.decreasefont.setStatusTip("Text Color")
 		self.decreasefont.triggered.connect(self.decreaseFontSize)
 
@@ -47,14 +49,16 @@ class Sticky(QtGui.QMainWindow):
 		self.toolBar.addAction(self.decreasefont)
 
     def changeBgColor(self):
-    	selectedcolor = QtGui.QColorDialog.getColor()
-    	self.pal.setColor(QtGui.QPalette.Base,selectedcolor)
-    	self.note.setPalette(self.pal)
+        selectedcolor = QtGui.QColorDialog.getColor()
+        if QtGui.QColor.isValid(selectedcolor):
+        	self.pal.setColor(QtGui.QPalette.Base,selectedcolor)
+        	self.note.setPalette(self.pal)
 
     def changeTextColor(self):
     	selectedcolor = QtGui.QColorDialog.getColor()
-    	self.pal.setColor(QtGui.QPalette.Text,selectedcolor)
-    	self.note.setPalette(self.pal)
+        if QtGui.QColor.isValid(selectedcolor):
+        	self.pal.setColor(QtGui.QPalette.Text,selectedcolor)
+        	self.note.setPalette(self.pal)
 
     def increaseFontSize(self):
     	current = self.note.currentFont().pointSize()
