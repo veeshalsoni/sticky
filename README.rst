@@ -9,6 +9,14 @@ Features
 *Colorful Background
 *Font Increase/Decrease
 
+Installtion
+===========
+pip install stickynotes
+
+Uninstall
+=========
+pip uninstall stickynotes
+
 Usage
 =====
 from terminal: initsticky
