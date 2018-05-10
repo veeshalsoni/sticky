@@ -15,7 +15,7 @@ setup(name='Sticky',
       license='GPLv3',
       long_description=readme(),
       classifiers=[
-	    'Development Status :: 4 - Beta',
+	    'Development Status :: 5 - Production/Stable',
 		'Programming Language :: Python',
     	'Intended Audience :: General',
 		'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
