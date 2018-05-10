@@ -11,11 +11,13 @@ Features
 
 Installtion
 ===========
-pip install stickynotes
+::
+	pip install stickynotes
 
 Uninstall
 =========
-pip uninstall stickynotes
+::
+	pip uninstall stickynotes
 
 Usage
 =====
@@ -24,7 +26,10 @@ from terminal:
 	initsticky
 To run in background: 
 ::
-	initsticky & OR nohup initsticky &
+	initsticky & 
+To continue running when terminal closed:
+::
+	nohup initsticky &
 
 screenshots
 ===========
