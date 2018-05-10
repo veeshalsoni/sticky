@@ -17,7 +17,7 @@ setup(name='Sticky',
       classifiers=[
 	    'Development Status :: 5 - Production/Stable',
 		'Programming Language :: Python',
-    	'Intended Audience :: General',
+    	'Intended Audience :: End Users/Desktop',
 		'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
 	  ],
 	  data_files=[('/sticky/icons',glob.glob('icons/*'))],
