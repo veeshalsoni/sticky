@@ -5,7 +5,7 @@ def readme():
     with open('README.rst') as f:
         return f.read()
 
-setup(name='Sticky',
+setup(name='stickynotes',
       version='0.1.0',
       description='Sticky Notes',
       url='http://github.com/veeshalsoni/sticky',
@@ -23,5 +23,5 @@ setup(name='Sticky',
 	  data_files=[('/sticky/icons',glob.glob('icons/*'))],
 	  include_package_data=True,
       install_requires=['PySide'],
-      scripts=["initsticky"],
+      scripts=['initsticky'],
       packages=['sticky'])
