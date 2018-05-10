@@ -4,33 +4,35 @@ Sticky Notes
 Sticky notes for your desktop
 
 Features
-========
-* Colorful Text
-* Colorful Background
-* Font Increase/Decrease
+^^^^^^^^^^^^^^^^^^^^^
+- Colorful Text
+- Colorful Background
+- Font Size Increase/Decrease
 
-Installtion
-===========
-::
-	pip install stickynotes
+Installation
+^^^^^^^^^^^^^^^^^^^^^
+- Install
 
-Uninstall
-=========
-::
-	pip uninstall stickynotes
+``pip install stickynotes``
+
+- Uninstall 
+
+``pip uninstall stickynotes``
 
 Usage
-=====
-from terminal: 
-::
-	initsticky
-To run in background: 
-::
-	initsticky & 
-To continue running when terminal closed:
-::
-	nohup initsticky &
+^^^^^^^^^^^^^^^^^^^^^
+- From Terminal
 
-screenshots
-===========
-.. image:: screenshots/screenshot1.png
+``initsticky``
+
+- To Run in the background
+
+``initsticky &``
+
+- To continue running with closed terminal
+
+``nohup initsticky &``
+
+Screenshots
+^^^^^^^^^^^^^^^^^^^^^
+.. image:: screenshot/screenshot1.png
