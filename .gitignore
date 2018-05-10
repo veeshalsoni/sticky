@@ -1,2 +1,4 @@
 vern
 *.pyc
+dist
+*.egg-info
