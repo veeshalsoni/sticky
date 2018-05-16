@@ -2,3 +2,4 @@ vern
 *.pyc
 dist
 *.egg-info
+sticky/icons
