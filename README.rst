@@ -35,4 +35,4 @@ Usage
 
 Screenshots
 ^^^^^^^^^^^^^^^^^^^^^
-.. image:: screenshots/screenshot1.png
+.. image:: screenshots/screenshot2.png

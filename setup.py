@@ -6,7 +6,7 @@ def readme():
         return f.read()
 
 setup(name='stickynotes',
-      version='0.1.0',
+      version='0.2.0',
       description='Sticky Notes',
       url='http://github.com/veeshalsoni/sticky',
       author='Vishal Soni',
