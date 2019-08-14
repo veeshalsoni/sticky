@@ -2,16 +2,23 @@ import sys
 from PySide import QtCore, QtGui
 import os
 
+windows = []
+cur_dir = os.path.dirname(__file__)
+backup_file = '.stickynotes-backup'
+backup_progress = False
+
 class Sticky(QtGui.QMainWindow):
-	def __init__(self, parent=None):
+	def __init__(self, on_create, on_close, on_delete, text=None, config=None):
 		QtGui.QMainWindow.__init__(self)
+		self.on_create = on_create
+		self.on_close = on_close
+		self.on_delete = on_delete
+		self.text = text
+		self.config = config
+		self.deleted = False
 		self.initUI()
 
 	def initUI(self):
-		self.backupfile = '.stickynotes-backup'
-		self.configfile = '.stickynotes-config'
-		self.cur_dir = os.path.dirname(__file__)
-
 		self.note = QtGui.QTextEdit(self)
 		self.pal = QtGui.QPalette()
 		self.font = QtGui.QFont()
@@ -26,41 +33,46 @@ class Sticky(QtGui.QMainWindow):
 		self.toolBar = self.addToolBar("Options")
 		self.addToolBarBreak()
 		self.addToolBarElements()
-		self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), 'icons/main.png')))
 
-		self.check_old_backups()
-		old_config = self.get_old_config()
-		if old_config:
-			self.load_config(old_config)
+		if self.text:
+			self.note.setText(self.text)
+
+		if self.config:
+			self.load_config(self.config)
 
 		self.show()
 
 	def addToolBarElements(self):
-		self.bgcolor = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/bgcolor.png')),"Change Background Color",self)
-		self.bgcolor.setStatusTip("Background Color")
+		self.bgcolor = QtGui.QAction("B", self)
+		self.bgcolor.setToolTip("Background Color")
 		self.bgcolor.triggered.connect(self.changeBgColor)
 
-		self.textcolor = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/color.png')),"Select Text Color",self)
-		self.textcolor.setStatusTip("Text Color")
+		self.textcolor = QtGui.QAction("F", self)
+		self.textcolor.setToolTip("Text Color")
 		self.textcolor.triggered.connect(self.changeTextColor)
 
-		self.increasefont = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/increase.png')),"Select Text Color",self)
-		self.increasefont.setStatusTip("Text Color")
+		self.increasefont = QtGui.QAction("+", self)
+		self.increasefont.setToolTip("Increase Text Size")
 		self.increasefont.triggered.connect(self.increaseFontSize)
 
-		self.decreasefont = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/decrease.png')),"Select Text Color",self)
-		self.decreasefont.setStatusTip("Text Color")
+		self.decreasefont = QtGui.QAction("-", self)
+		self.decreasefont.setToolTip("Decrease Text Size")
 		self.decreasefont.triggered.connect(self.decreaseFontSize)
 
-		self.newwindow = QtGui.QAction(QtGui.QIcon(os.path.join(os.path.dirname(__file__),'icons/new.png')),"New Note",self)
-		self.newwindow.setStatusTip("New Note")
+		self.newwindow = QtGui.QAction("N", self)
+		self.newwindow.setToolTip("New Note")
 		self.newwindow.triggered.connect(self.create_new_window)
+
+		self.deleteWindow = QtGui.QAction("D", self)
+		self.deleteWindow.setToolTip("Delete Note")
+		self.deleteWindow.triggered.connect(self.delete_window)
 
 		self.toolBar.addAction(self.bgcolor)
 		self.toolBar.addAction(self.textcolor)
 		self.toolBar.addAction(self.increasefont)
 		self.toolBar.addAction(self.decreasefont)
 		self.toolBar.addAction(self.newwindow)
+		self.toolBar.addAction(self.deleteWindow)
 
 	def changeBgColor(self):
 		selectedcolor = QtGui.QColorDialog.getColor()
@@ -92,50 +104,16 @@ class Sticky(QtGui.QMainWindow):
 			self.note.setFont(self.font)
 			self.note.setTextCursor(cursor)
 
-	def closeEvent(self,event):
-		if self.note.toPlainText() == "" or not self.note.toPlainText():
-			self.delete_backup_files()
-			return
-
-		self.create_backup()
+	def closeEvent(self, event):
+		self.on_close()
 
 	def create_new_window(self):
-		w = Sticky()
-		w.show()
-		self.others_windows.append(w)
+		self.on_create()
 
-	def create_backup(self):
-		backup_file = os.path.join(self.cur_dir, self.backupfile)
-		with open(backup_file, "w") as f:
-			f.write(self.note.toPlainText())
-
-		self.save_current_config()
-
-	def check_old_backups(self):
-		backup_file = os.path.join(self.cur_dir, self.backupfile)
-		if not os.path.exists(backup_file):
-			return
-
-		lines = []
-		with open(backup_file, "r") as f:
-			lines = f.readlines()
-
-		self.note.setText("".join(lines))
-
-	def save_current_config(self):
-		config_file = os.path.join(self.cur_dir, self.configfile)
-		config = {
-			'color': {
-				'bg_color': self.pal.color(QtGui.QPalette.Base).rgba(),
-				'fg_color': self.pal.color(QtGui.QPalette.Text).rgba()
-			},
-			'font': {
-				'size': self.font.pointSize()
-			}
-		}
-
-		with open(config_file, "w") as f:
-			f.write(str(config))
+	def delete_window(self):
+		self.on_close = self.on_delete
+		self.deleted = True
+		self.close()
 
 	def load_config(self, config):
 		self.font.setPointSize(config['font']['size'])
@@ -148,28 +126,116 @@ class Sticky(QtGui.QMainWindow):
 		self.note.setFont(self.font)
 		self.note.setPalette(self.pal)
 
-	def get_old_config(self):
-		config_file = os.path.join(self.cur_dir, self.configfile)
-		if not os.path.exists(config_file):
-			return
+	def get_current_text(self):
+		return self.note.toPlainText()
 
-		with open(config_file, "r") as f:
-			config = f.readlines()
+	def get_current_config(self):
+		config = {
+			'color': {
+				'bg_color': self.pal.color(QtGui.QPalette.Base).rgba(),
+				'fg_color': self.pal.color(QtGui.QPalette.Text).rgba()
+			},
+			'font': {
+				'size': self.font.pointSize()
+			}
+		}
 
-		if config:
-			import ast
-			config = ast.literal_eval(config[0])
 		return config
 
-	def delete_backup_files(self):
-		backup_file = os.path.join(self.cur_dir, self.backupfile)
-		config_file = os.path.join(self.cur_dir, self.configfile)
 
-		os.remove(backup_file)
-		os.remove(config_file)
+def create_new_window(text=None, config=None):
+	global windows
+	w = Sticky(create_new_window, create_backup, delete_window, text, config)
+	w.show()
+	windows.append(w)
+
+
+def create_backup():
+	global windows
+	global backup_progress
+	if not len(windows) or backup_progress:
+		return
+
+	backup_progress = True
+	backups = []
+	for window in windows:
+		window_text = window.get_current_text()
+		if valid_note(window_text):
+			window_config = window.get_current_config()
+			backup = {
+				'text': window_text,
+				'config': window_config
+			}
+
+			backups.append(backup)
+
+		window.close()
+
+	windows = []
+	if len(backups):
+		save_backup(backups)
+
+	backup_progress = False
+
+
+def valid_note(window_text):
+	if window_text == "" or not window_text:
+		return False
+
+	return True
+
+
+def save_backup(backups):
+	global cur_dir
+	global backup_file
+
+	_backup_file = os.path.join(cur_dir, backup_file)
+
+	with open(_backup_file, "w") as f:
+		f.write(str(backups))
+
+
+def get_old_config(self):
+	config_file = os.path.join(self.cur_dir, self.configfile)
+	if not os.path.exists(config_file):
+		return
+
+	with open(config_file, "r") as f:
+		config = f.readlines()
+
+	if config:
+		import ast
+		config = ast.literal_eval(config[0])
+	return config
+
+
+def initiate_notes():
+	global cur_dir
+	global backup_file
+
+	_backup_file = os.path.join(cur_dir, backup_file)
+
+	if not os.path.exists(_backup_file):
+		create_new_window()
+		return
+
+	with open(_backup_file, "r") as f:
+		backups = f.readlines()
+
+	import ast
+	backup_list = ast.literal_eval(backups[0])
+	for backup in backup_list:
+		create_new_window(backup['text'], backup['config'])
+
+	os.remove(backup_file)
+
+
+def delete_window():
+	global windows
+	windows = [window for window in windows if not window.deleted]
 
 
 def run():
 	app = QtGui.QApplication(sys.argv)
-	notes = Sticky()
+	initiate_notes()
 	sys.exit(app.exec_())
