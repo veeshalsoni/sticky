@@ -3,3 +3,4 @@ vern
 dist
 *.egg-info
 sticky/icons
+.stickynotes-backup
