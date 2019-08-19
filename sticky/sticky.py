@@ -1,15 +1,11 @@
 import sys
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 import os
 
-windows = []
-cur_dir = os.path.dirname(__file__)
-backup_file = '.stickynotes-backup'
-backup_progress = False
 
-class Sticky(QtGui.QMainWindow):
+class Sticky(QtWidgets.QMainWindow):
 	def __init__(self, on_create, on_close, on_delete, text=None, config=None):
-		QtGui.QMainWindow.__init__(self)
+		QtWidgets.QMainWindow.__init__(self)
 		self.on_create = on_create
 		self.on_close = on_close
 		self.on_delete = on_delete
@@ -19,7 +15,7 @@ class Sticky(QtGui.QMainWindow):
 		self.initUI()
 
 	def initUI(self):
-		self.note = QtGui.QTextEdit(self)
+		self.note = QtWidgets.QTextEdit(self)
 		self.pal = QtGui.QPalette()
 		self.font = QtGui.QFont()
 		self.font.setPointSize(15)
@@ -43,27 +39,27 @@ class Sticky(QtGui.QMainWindow):
 		self.show()
 
 	def addToolBarElements(self):
-		self.bgcolor = QtGui.QAction("B", self)
+		self.bgcolor = QtWidgets.QAction("B", self)
 		self.bgcolor.setToolTip("Background Color")
 		self.bgcolor.triggered.connect(self.changeBgColor)
 
-		self.textcolor = QtGui.QAction("F", self)
+		self.textcolor = QtWidgets.QAction("F", self)
 		self.textcolor.setToolTip("Text Color")
 		self.textcolor.triggered.connect(self.changeTextColor)
 
-		self.increasefont = QtGui.QAction("+", self)
+		self.increasefont = QtWidgets.QAction("+", self)
 		self.increasefont.setToolTip("Increase Text Size")
 		self.increasefont.triggered.connect(self.increaseFontSize)
 
-		self.decreasefont = QtGui.QAction("-", self)
+		self.decreasefont = QtWidgets.QAction("-", self)
 		self.decreasefont.setToolTip("Decrease Text Size")
 		self.decreasefont.triggered.connect(self.decreaseFontSize)
 
-		self.newwindow = QtGui.QAction("N", self)
+		self.newwindow = QtWidgets.QAction("N", self)
 		self.newwindow.setToolTip("New Note")
 		self.newwindow.triggered.connect(self.create_new_window)
 
-		self.deleteWindow = QtGui.QAction("D", self)
+		self.deleteWindow = QtWidgets.QAction("D", self)
 		self.deleteWindow.setToolTip("Delete Note")
 		self.deleteWindow.triggered.connect(self.delete_window)
 
@@ -75,13 +71,13 @@ class Sticky(QtGui.QMainWindow):
 		self.toolBar.addAction(self.deleteWindow)
 
 	def changeBgColor(self):
-		selectedcolor = QtGui.QColorDialog.getColor()
+		selectedcolor = QtWidgets.QColorDialog.getColor()
 		if QtGui.QColor.isValid(selectedcolor):
 			self.pal.setColor(QtGui.QPalette.Base,selectedcolor)
 			self.note.setPalette(self.pal)
 
 	def changeTextColor(self):
-		selectedcolor = QtGui.QColorDialog.getColor()
+		selectedcolor = QtWidgets.QColorDialog.getColor()
 		if QtGui.QColor.isValid(selectedcolor):
 			self.pal.setColor(QtGui.QPalette.Text,selectedcolor)
 			self.note.setPalette(self.pal)
@@ -143,99 +139,99 @@ class Sticky(QtGui.QMainWindow):
 		return config
 
 
-def create_new_window(text=None, config=None):
-	global windows
-	w = Sticky(create_new_window, create_backup, delete_window, text, config)
-	w.show()
-	windows.append(w)
+class App():
+	"""Main App Class, It handles the notes creation
+	"""
+	def __init__(self):
+		self.app = QtWidgets.QApplication(sys.argv)
+		self.windows = []
+		self.cur_dir = os.path.dirname(__file__)
+		self.backup_file = '.stickynotes-backup'
+		self.backup_progress = False
+		self.initiate_notes()
 
+	def initiate_notes(self):
+		_backup_file = os.path.join(self.cur_dir, self.backup_file)
 
-def create_backup():
-	global windows
-	global backup_progress
-	if not len(windows) or backup_progress:
-		return
+		if not os.path.exists(_backup_file):
+			self.create_new_window()
+			return
 
-	backup_progress = True
-	backups = []
-	for window in windows:
-		window_text = window.get_current_text()
-		if valid_note(window_text):
-			window_config = window.get_current_config()
-			backup = {
-				'text': window_text,
-				'config': window_config
-			}
+		with open(_backup_file, "r") as f:
+			backups = f.readlines()
 
-			backups.append(backup)
-
-		window.close()
-
-	windows = []
-	if len(backups):
-		save_backup(backups)
-
-	backup_progress = False
-
-
-def valid_note(window_text):
-	if window_text == "" or not window_text:
-		return False
-
-	return True
-
-
-def save_backup(backups):
-	global cur_dir
-	global backup_file
-
-	_backup_file = os.path.join(cur_dir, backup_file)
-
-	with open(_backup_file, "w") as f:
-		f.write(str(backups))
-
-
-def get_old_config(self):
-	config_file = os.path.join(self.cur_dir, self.configfile)
-	if not os.path.exists(config_file):
-		return
-
-	with open(config_file, "r") as f:
-		config = f.readlines()
-
-	if config:
 		import ast
-		config = ast.literal_eval(config[0])
-	return config
+		backup_list = ast.literal_eval(backups[0])
+		for backup in backup_list:
+			self.create_new_window(backup['text'], backup['config'])
 
+		os.remove(_backup_file)
 
-def initiate_notes():
-	global cur_dir
-	global backup_file
+	def create_new_window(self, text=None, config=None):
+		w = Sticky(self.create_new_window, self.create_backup, self.delete_window, text, config)
+		w.show()
+		self.windows.append(w)
 
-	_backup_file = os.path.join(cur_dir, backup_file)
+	def create_backup(self):
+		if not len(self.windows) or self.backup_progress:
+			return
 
-	if not os.path.exists(_backup_file):
-		create_new_window()
-		return
+		self.backup_progress = True
+		backups = []
+		for window in self.windows:
+			window_text = window.get_current_text()
+			if self.valid_note(window_text):
+				window_config = window.get_current_config()
+				backup = {
+					'text': window_text,
+					'config': window_config
+				}
 
-	with open(_backup_file, "r") as f:
-		backups = f.readlines()
+				backups.append(backup)
 
-	import ast
-	backup_list = ast.literal_eval(backups[0])
-	for backup in backup_list:
-		create_new_window(backup['text'], backup['config'])
+			window.delete_window()
 
-	os.remove(backup_file)
+		if len(backups):
+			self.save_backup(backups)
 
+		self.backup_progress = False
 
-def delete_window():
-	global windows
-	windows = [window for window in windows if not window.deleted]
+	def valid_note(self, window_text):
+		if window_text == "" or not window_text:
+			return False
+
+		return True
+
+	def save_backup(self, backups):
+
+		_backup_file = os.path.join(self.cur_dir, self.backup_file)
+
+		with open(_backup_file, "w") as f:
+			f.write(str(backups))
+
+	def get_old_config(self):
+		config_file = os.path.join(self.cur_dir, self.configfile)
+		if not os.path.exists(config_file):
+			return
+
+		with open(config_file, "r") as f:
+			config = f.readlines()
+
+		if config:
+			import ast
+			config = ast.literal_eval(config[0])
+		return config
+
+	def delete_window(self):
+		self.windows = [window for window in self.windows if not window.deleted]
+		if not len(self.windows):
+			exit()
 
 
 def run():
-	app = QtGui.QApplication(sys.argv)
-	initiate_notes()
-	sys.exit(app.exec_())
+	main = App()
+	sys.exit(main.app.exec_())
+
+
+if __name__ == '__main__':
+	run()

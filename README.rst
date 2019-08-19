@@ -5,8 +5,9 @@ Sticky notes for your desktop
 
 Features
 ^^^^^^^^^^^^^^^^^^^^^
-- Colorful Text
-- Colorful Background
+- Back up of notes with data
+- Colored Text
+- Colored Background
 - Font Size Increase/Decrease
 
 Installation
